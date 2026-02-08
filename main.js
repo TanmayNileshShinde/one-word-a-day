@@ -29,9 +29,17 @@ onAuthStateChanged(auth, async (user) => {
   const res = await fetch("/api/today-word");
   const wordData = await res.json();
 
+  if (wordData.error) {
+    document.getElementById("word").innerText = "Error";
+    document.getElementById("meaning").innerText = wordData.error;
+    document.getElementById("example").innerText = wordData.details || "";
+    return;
+  }
+
   document.getElementById("word").innerText = wordData.word;
   document.getElementById("meaning").innerText = wordData.meaning;
   document.getElementById("example").innerText = wordData.example;
+
 
   const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
