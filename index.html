@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -18,6 +18,20 @@
         </header>
 
         <main class="card">
+            <div class="stats-container">
+                <div class="stat-box">
+                    <span class="stat-label">Current Streak</span>
+                    <span class="stat-value" id="current-streak">0</span>
+                    <span class="stat-icon">🔥</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-box">
+                    <span class="stat-label">Highest Streak</span>
+                    <span class="stat-value" id="max-streak">0</span>
+                    <span class="stat-icon">🏆</span>
+                </div>
+            </div>
+
             <div class="word-header">
                 <h2 id="word-display" class="word">Loading...</h2>
                 <div class="phonetics-group">
@@ -40,13 +54,12 @@
         </main>
         
         <footer>
-            <p>Come back tomorrow for a new word.</p>
+            <p>Come back tomorrow to keep your streak alive.</p>
         </footer>
     </div>
 
     <script src="main.js"></script>
     <script>
-        // Simple script to show today's date
         const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', dateOptions);
     </script>

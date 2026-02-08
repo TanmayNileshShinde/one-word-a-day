@@ -129,3 +129,53 @@ footer {
     font-size: 0.9rem;
     color: #aaa;
 }
+.stats-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+    padding: 15px 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    border: 1px solid #e9ecef;
+}
+
+.stat-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    font-family: 'Inter', sans-serif;
+}
+
+.stat-icon {
+    font-size: 1.2rem;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.2;
+}
+
+.stat-divider {
+    width: 1px;
+    height: 40px;
+    background-color: #ddd;
+    margin: 0 15px;
+}
