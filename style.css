@@ -132,9 +132,9 @@ footer {
 .stats-container {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: stretch; /* Makes divider equal height */
     background-color: #f8f9fa;
-    padding: 15px 20px;
+    padding: 15px 10px; /* Reduced side padding */
     border-radius: 12px;
     margin-bottom: 25px;
     border: 1px solid #e9ecef;
@@ -142,42 +142,45 @@ footer {
 
 .stat-box {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    align-items: center; /* Vertically center everything */
+    justify-content: center;
     flex: 1;
-    position: relative;
+    gap: 12px; /* Space between text and icon */
 }
 
-.stat-label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #888;
-    margin-bottom: 4px;
-    font-weight: 600;
+.stat-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align text to the left */
 }
 
 .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: var(--primary-color);
     font-family: 'Inter', sans-serif;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    font-weight: 600;
 }
 
 .stat-icon {
-    font-size: 1.2rem;
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 0.2;
+    font-size: 1.8rem;
+    opacity: 1; /* Made fully visible */
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); /* Slight shadow for pop */
 }
 
 .stat-divider {
     width: 1px;
-    height: 40px;
-    background-color: #ddd;
-    margin: 0 15px;
+    background-color: #e0e0e0;
+    margin: 5px 0;
 }
 /* Auth Styles */
 .user-controls {
