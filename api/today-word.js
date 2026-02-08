@@ -6,23 +6,26 @@ export default async function handler(req, res) {
 
     const today = new Date().toISOString().slice(0, 10);
 
-    // simple in-memory cache per deployment
+    // cache for the day (per deployment)
     if (global.dailyWord && global.dailyWord.date === today) {
       return res.status(200).json(global.dailyWord);
     }
 
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.AI_API_KEY}`,
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${process.env.AI_API_KEY}`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
           contents: [
             {
+              role: "user",
               parts: [
                 {
                   text:
-                    "Give ONE English vocabulary word. Reply ONLY in valid JSON like this: {\"word\":\"\",\"meaning\":\"\",\"example\":\"\"}"
+                    "Reply ONLY in valid JSON. Give ONE English vocabulary word with meaning and example. Format exactly like this: {\"word\":\"\",\"meaning\":\"\",\"example\":\"\"}"
                 }
               ]
             }
@@ -31,15 +34,15 @@ export default async function handler(req, res) {
       }
     );
 
-    if (!geminiRes.ok) {
-      const text = await geminiRes.text();
+    if (!response.ok) {
+      const text = await response.text();
       return res.status(500).json({
         error: "Gemini API error",
         details: text
       });
     }
 
-    const data = await geminiRes.json();
+    const data = await response.json();
 
     const text =
       data?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -62,9 +65,9 @@ export default async function handler(req, res) {
 
     global.dailyWord = result;
 
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       error: "Server error",
       details: err.message
     });
