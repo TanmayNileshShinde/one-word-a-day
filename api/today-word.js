@@ -6,30 +6,28 @@ export default async function handler(req, res) {
 
     const today = new Date().toISOString().slice(0, 10);
 
-    // cache for the day (per deployment)
     if (global.dailyWord && global.dailyWord.date === today) {
       return res.status(200).json(global.dailyWord);
     }
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${process.env.AI_API_KEY}`,
+      "https://openrouter.ai/api/v1/chat/completions",
       {
         method: "POST",
         headers: {
+          "Authorization": `Bearer ${process.env.AI_API_KEY}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          contents: [
+          model: "mistralai/mistral-7b-instruct:free",
+          messages: [
             {
               role: "user",
-              parts: [
-                {
-                  text:
-                    "Reply ONLY in valid JSON. Give ONE English vocabulary word with meaning and example. Format exactly like this: {\"word\":\"\",\"meaning\":\"\",\"example\":\"\"}"
-                }
-              ]
+              content:
+                "Reply ONLY in valid JSON. Give ONE English word with meaning and example. Format exactly like this: {\"word\":\"\",\"meaning\":\"\",\"example\":\"\"}"
             }
-          ]
+          ],
+          temperature: 0.4
         })
       }
     );
@@ -37,21 +35,16 @@ export default async function handler(req, res) {
     if (!response.ok) {
       const text = await response.text();
       return res.status(500).json({
-        error: "Gemini API error",
+        error: "AI API error",
         details: text
       });
     }
 
     const data = await response.json();
-
-    const text =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = data?.choices?.[0]?.message?.content;
 
     if (!text) {
-      return res.status(500).json({
-        error: "No AI response",
-        raw: data
-      });
+      return res.status(500).json({ error: "No AI response" });
     }
 
     const parsed = JSON.parse(text);
@@ -64,7 +57,6 @@ export default async function handler(req, res) {
     };
 
     global.dailyWord = result;
-
     return res.status(200).json(result);
   } catch (err) {
     return res.status(500).json({
