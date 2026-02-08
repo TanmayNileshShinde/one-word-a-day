@@ -20,44 +20,67 @@ let currentAudioUrl = null;
 let currentWordText = '';
 let currentUser = null;
 
-// --- 1. Authentication Logic ---
+// --- 1. Authentication & Streak Switcher ---
 
-// Listen for login state changes
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // User is logged in
+        // SCENARIO A: User is Logged In (Use Firebase)
         currentUser = user;
         loginBtn.style.display = 'none';
         userInfo.style.display = 'block';
-        userNameEl.textContent = user.displayName.split(' ')[0]; // Show first name
-        await loadUserData(user.uid);
+        userNameEl.textContent = user.displayName.split(' ')[0]; 
+        await loadFirebaseUserData(user.uid); 
     } else {
-        // User is logged out
+        // SCENARIO B: User is Guest (Use Local Storage)
         currentUser = null;
         loginBtn.style.display = 'flex';
         userInfo.style.display = 'none';
-        // Reset streak UI to 0 or local storage if you prefer
-        currentStreakEl.textContent = '-';
-        maxStreakEl.textContent = '-';
+        updateLocalStreak(); // <--- This ensures Guests see "1"
     }
 });
 
-// Login Button Click
+// Login/Logout Listeners
 loginBtn.addEventListener('click', () => {
-    signInWithPopup(auth, provider).catch((error) => {
-        console.error("Login failed:", error);
-    });
+    signInWithPopup(auth, provider).catch((error) => console.error("Login failed:", error));
 });
 
-// Logout Button Click
 logoutBtn.addEventListener('click', () => {
     signOut(auth);
 });
 
+// --- 2. Streak Logic (The Brains) ---
 
-// --- 2. Database & Streak Logic ---
+// Logic for GUESTS (Local Storage)
+function updateLocalStreak() {
+    const today = new Date().toDateString();
+    const lastVisit = localStorage.getItem('oneWord_lastVisit');
+    let currentStreak = parseInt(localStorage.getItem('oneWord_streak') || '0');
+    let maxStreak = parseInt(localStorage.getItem('oneWord_maxStreak') || '0');
 
-async function loadUserData(userId) {
+    if (lastVisit === today) {
+        // Same day: Do nothing, just display existing value
+        if(currentStreak === 0) currentStreak = 1; // Fix for "0" bug on same-day refresh
+    } else if (isYesterday(lastVisit)) {
+        // Consecutive day: +1
+        currentStreak++;
+    } else {
+        // Missed a day OR First visit ever: Reset to 1
+        currentStreak = 1; 
+    }
+
+    if (currentStreak > maxStreak) maxStreak = currentStreak;
+
+    // Save and Update UI
+    localStorage.setItem('oneWord_lastVisit', today);
+    localStorage.setItem('oneWord_streak', currentStreak);
+    localStorage.setItem('oneWord_maxStreak', maxStreak);
+    
+    currentStreakEl.textContent = currentStreak;
+    maxStreakEl.textContent = maxStreak;
+}
+
+// Logic for LOGGED IN USERS (Firebase)
+async function loadFirebaseUserData(userId) {
     const today = new Date().toDateString();
     const userRef = doc(db, "users", userId);
     const userSnap = await getDoc(userRef);
@@ -73,28 +96,23 @@ async function loadUserData(userId) {
         lastVisit = data.lastVisit || '';
     }
 
-    // Calculate Streak
+    // Identical logic to local storage
     if (lastVisit === today) {
-        // Already visited today, keep streak
+        if(streak === 0) streak = 1;
     } else if (isYesterday(lastVisit)) {
-        // Visited yesterday, increment
         streak++;
     } else {
-        // Missed a day (or first time), reset
         streak = 1;
     }
 
-    // Update Max Streak
-    if (streak > maxStreak) {
-        maxStreak = streak;
-    }
+    if (streak > maxStreak) maxStreak = streak;
 
-    // Save to Firestore
+    // Save to Cloud
     await setDoc(userRef, {
         currentStreak: streak,
         highestStreak: maxStreak,
         lastVisit: today,
-        email: currentUser.email // optional: save email for admin reference
+        email: currentUser.email
     }, { merge: true });
 
     // Update UI
@@ -102,6 +120,7 @@ async function loadUserData(userId) {
     maxStreakEl.textContent = maxStreak;
 }
 
+// Helper to check if date was yesterday
 function isYesterday(dateString) {
     if (!dateString) return false;
     const today = new Date();
@@ -111,10 +130,12 @@ function isYesterday(dateString) {
 }
 
 
-// --- 3. Word Loading Logic (Same as before) ---
+// --- 3. Word Loading Logic ---
 
 document.addEventListener('DOMContentLoaded', () => {
     loadDailyWord();
+    // Note: We don't call updateStreak() here anymore because
+    // onAuthStateChanged triggers immediately and handles it.
 });
 
 async function loadDailyWord() {
