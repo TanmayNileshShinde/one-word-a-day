@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "backend/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}
