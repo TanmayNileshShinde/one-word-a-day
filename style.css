@@ -1,112 +1,131 @@
 :root {
-  --bg: #0b0f14;
-  --card: #121826;
-  --text: #e6e8eb;
-  --muted: #9aa4b2;
-  --accent: #6ee7b7;
+    --bg-color: #f4f4f9;
+    --card-bg: #ffffff;
+    --primary-color: #2c3e50;
+    --accent-color: #3498db;
+    --text-color: #555;
+    --shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
 * {
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: radial-gradient(circle at top, #111827, #020617);
-  color: var(--text);
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: var(--primary-color);
+    padding: 20px;
 }
 
-.app {
-  width: 100%;
-  max-width: 420px;
-  padding: 24px;
+.container {
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
 }
 
 header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
+    margin-bottom: 2rem;
 }
 
-header h2 {
-  font-weight: 600;
-  letter-spacing: 0.5px;
+.date {
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 0.5rem;
 }
 
-main {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    color: var(--primary-color);
 }
 
-.word-card {
-  background: linear-gradient(180deg, #0f172a, #020617);
-  border-radius: 20px;
-  padding: 32px 28px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+.card {
+    background: var(--card-bg);
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    text-align: left;
+    transition: transform 0.3s ease;
 }
 
-.word-card h1 {
-  font-size: 3rem;
-  margin: 0 0 12px;
-  letter-spacing: 1px;
+.card:hover {
+    transform: translateY(-5px);
 }
 
-.meaning {
-  font-size: 1.1rem;
-  color: var(--accent);
+.word-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.word {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--primary-color);
+    text-transform: capitalize;
+}
+
+.phonetics-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.phonetic {
+    font-family: monospace;
+    color: var(--accent-color);
+    font-size: 1.1rem;
+}
+
+.audio-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--accent-color);
+    padding: 5px;
+    border-radius: 50%;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.audio-btn:hover {
+    background: rgba(52, 152, 219, 0.1);
 }
 
 .divider {
-  height: 1px;
-  background: rgba(255,255,255,0.08);
-  margin: 24px 0;
+    height: 1px;
+    background-color: #eee;
+    margin: 1.5rem 0;
 }
 
-.example {
-  font-size: 1rem;
-  color: var(--muted);
-  line-height: 1.6;
+.part-of-speech {
+    display: inline-block;
+    font-style: italic;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #888;
 }
 
-.streak {
-  text-align: center;
-  font-size: 0.95rem;
-  color: var(--muted);
+.definition {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--text-color);
 }
 
 footer {
-  text-align: center;
-  margin-top: 48px;
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-
-button {
-  font-family: inherit;
-}
-
-.login {
-  padding: 14px 24px;
-  border-radius: 999px;
-  border: none;
-  background: var(--accent);
-  color: #022c22;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.ghost {
-  background: none;
-  border: none;
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 0.9rem;
+    margin-top: 2rem;
+    font-size: 0.9rem;
+    color: #aaa;
 }
