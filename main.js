@@ -13,10 +13,11 @@ const currentStreakEl = document.getElementById('current-streak');
 const maxStreakEl = document.getElementById('max-streak');
 
 let currentAudioUrl = null;
+let currentWordText = '';
 
 document.addEventListener('DOMContentLoaded', () => {
-    updateStreak(); // Handle streak logic first
-    loadDailyWord(); // Then load the word
+    updateStreak();
+    loadDailyWord();
 });
 
 function updateStreak() {
@@ -26,26 +27,21 @@ function updateStreak() {
     let maxStreak = parseInt(localStorage.getItem('oneWord_maxStreak') || '0');
 
     if (lastVisit === today) {
-        // User already visited today, do nothing
+        // visited today, do nothing
     } else if (isYesterday(lastVisit)) {
-        // User visited yesterday, increment streak
         currentStreak++;
     } else {
-        // User missed a day (or first visit), reset to 1
         currentStreak = 1;
     }
 
-    // Update Max Streak if broken
     if (currentStreak > maxStreak) {
         maxStreak = currentStreak;
     }
 
-    // Save new values
     localStorage.setItem('oneWord_lastVisit', today);
     localStorage.setItem('oneWord_streak', currentStreak);
     localStorage.setItem('oneWord_maxStreak', maxStreak);
 
-    // Update UI
     currentStreakEl.textContent = currentStreak;
     maxStreakEl.textContent = maxStreak;
 }
@@ -105,33 +101,38 @@ async function fetchAndVerifyWord(dateKey) {
 }
 
 function renderWord(data) {
-    const word = data.word;
+    currentWordText = data.word; // Store word for robot voice
     const phonetic = data.phonetic || (data.phonetics.find(p => p.text)?.text) || '';
     const meaning = data.meanings[0];
     const definition = meaning?.definitions[0]?.definition || 'No definition available.';
     const partOfSpeech = meaning?.partOfSpeech || 'noun';
     
+    // Check for human audio
     const audioObj = data.phonetics.find(p => p.audio && p.audio !== '');
     currentAudioUrl = audioObj ? audioObj.audio : null;
 
-    if (wordEl) wordEl.textContent = word;
+    if (wordEl) wordEl.textContent = currentWordText;
     if (phoneticEl) phoneticEl.textContent = phonetic;
     if (definitionEl) definitionEl.textContent = definition;
     if (partOfSpeechEl) partOfSpeechEl.textContent = partOfSpeech;
 
+    // ALWAYS show the button now
     if (audioBtn) {
-        if (currentAudioUrl) {
-            audioBtn.style.display = 'inline-flex'; // changed to flex for centering
-            audioBtn.onclick = playAudio;
-        } else {
-            audioBtn.style.display = 'none';
-        }
+        audioBtn.style.display = 'inline-flex';
+        audioBtn.onclick = playAudio;
     }
 }
 
 function playAudio() {
+    // 1. Try Human Audio
     if (currentAudioUrl) {
         const audio = new Audio(currentAudioUrl);
         audio.play();
+    } 
+    // 2. Fallback to Robot Voice (Browser Speech API)
+    else if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(currentWordText);
+        utterance.lang = 'en-US'; 
+        window.speechSynthesis.speak(utterance);
     }
 }
