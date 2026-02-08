@@ -1,46 +1,54 @@
 export default async function handler(req, res) {
   try {
-    const today = new Date().toISOString().slice(0, 10);
-
-    if (global.dailyWord && global.dailyWord.date === today) {
-      return res.status(200).json(global.dailyWord);
-    }
-
     if (!process.env.AI_API_KEY) {
       return res.status(500).json({ error: "AI_API_KEY missing" });
     }
 
-    const response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
+    const today = new Date().toISOString().slice(0, 10);
+
+    // simple in-memory cache per deployment
+    if (global.dailyWord && global.dailyWord.date === today) {
+      return res.status(200).json(global.dailyWord);
+    }
+
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.AI_API_KEY}`,
       {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.AI_API_KEY}`,
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama3-8b-8192",
-          messages: [
+          contents: [
             {
-              role: "system",
-              content: "You only reply with valid JSON. No extra text."
-            },
-            {
-              role: "user",
-              content:
-                "Give ONE English word. Return JSON with keys: word, meaning, example."
+              parts: [
+                {
+                  text:
+                    "Give ONE English vocabulary word. Reply ONLY in valid JSON like this: {\"word\":\"\",\"meaning\":\"\",\"example\":\"\"}"
+                }
+              ]
             }
-          ],
-          temperature: 0.4
+          ]
         })
       }
     );
 
-    const raw = await response.json();
-    const text = raw.choices?.[0]?.message?.content;
+    if (!geminiRes.ok) {
+      const text = await geminiRes.text();
+      return res.status(500).json({
+        error: "Gemini API error",
+        details: text
+      });
+    }
+
+    const data = await geminiRes.json();
+
+    const text =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!text) {
-      throw new Error("No AI response");
+      return res.status(500).json({
+        error: "No AI response",
+        raw: data
+      });
     }
 
     const parsed = JSON.parse(text);
@@ -56,7 +64,6 @@ export default async function handler(req, res) {
 
     res.status(200).json(result);
   } catch (err) {
-    console.error(err);
     res.status(500).json({
       error: "Server error",
       details: err.message
