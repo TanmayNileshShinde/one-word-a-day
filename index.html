@@ -1,32 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One Word A Day</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
 <body>
-  <div class="app">
-    <header>
-      <h2>One Word</h2>
-      <button id="logoutBtn" class="ghost">Logout</button>
-    </header>
 
-    <main>
-      <div class="word-card">
-        <h1 id="word">Word</h1>
-        <p id="meaning" class="meaning">Meaning</p>
+    <div class="container">
+        <header>
+            <p class="date" id="current-date"></p>
+            <h1>Word of the Day</h1>
+        </header>
 
-        <div class="divider"></div>
+        <main class="card">
+            <div class="word-header">
+                <h2 id="word-display" class="word">Loading...</h2>
+                <div class="phonetics-group">
+                    <span id="phonetic-display" class="phonetic"></span>
+                    <button id="audio-btn" class="audio-btn" aria-label="Play pronunciation">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
 
-        <p id="example" class="example">Example sentence</p>
-      </div>
+            <div class="divider"></div>
 
-      <div class="streak" id="streak">Streak: 0</div>
-    </main>
+            <div class="meaning-section">
+                <span id="part-of-speech" class="part-of-speech">noun</span>
+                <p id="definition-display" class="definition">Fetching today's word...</p>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Come back tomorrow for a new word.</p>
+        </footer>
+    </div>
 
-    <footer>
-      <p>Come back tomorrow.</p>
-    </footer>
-  </div>
-
-  <button id="loginBtn" class="login">
-    Continue with Google
-  </button>
-
-  <script type="module" src="firebase-config.js"></script>
-  <script type="module" src="main.js"></script>
+    <script src="main.js"></script>
+    <script>
+        // Simple script to show today's date
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', dateOptions);
+    </script>
 </body>
+</html>
