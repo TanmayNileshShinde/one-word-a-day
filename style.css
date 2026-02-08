@@ -179,3 +179,45 @@ footer {
     background-color: #ddd;
     margin: 0 15px;
 }
+/* Auth Styles */
+.user-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 0.9rem;
+}
+
+.auth-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    transition: all 0.2s;
+    color: #555;
+}
+
+.auth-btn:hover {
+    background: #f8f9fa;
+    border-color: #ccc;
+}
+
+.logout-btn {
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+    color: #888;
+    margin-left: 5px;
+    font-size: 0.85rem;
+}
+
+#user-name {
+    font-weight: 600;
+    color: var(--primary-color);
+}

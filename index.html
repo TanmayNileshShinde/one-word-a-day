@@ -13,6 +13,16 @@
 
     <div class="container">
         <header>
+            <div class="user-controls">
+                <button id="google-login-btn" class="auth-btn">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" width="18">
+                    Sign in to Save Streak
+                </button>
+                <div id="user-info" style="display: none;">
+                    <span id="user-name"></span>
+                    <button id="logout-btn" class="logout-btn">(Logout)</button>
+                </div>
+            </div>
             <p class="date" id="current-date"></p>
             <h1>Word of the Day</h1>
         </header>
@@ -58,7 +68,7 @@
         </footer>
     </div>
 
-    <script src="main.js"></script>
+    <script type="module" src="main.js"></script>
     <script>
         const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', dateOptions);

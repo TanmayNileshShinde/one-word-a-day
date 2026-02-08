@@ -1,9 +1,9 @@
-// main.js
+import { auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, doc, getDoc, setDoc } from './firebase-config.js';
 
 const RANDOM_WORD_API = 'https://random-word-api.herokuapp.com/word?number=1';
 const DICTIONARY_API = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 
-// Elements
+// DOM Elements
 const wordEl = document.getElementById('word-display');
 const phoneticEl = document.getElementById('phonetic-display');
 const definitionEl = document.getElementById('definition-display');
@@ -11,38 +11,94 @@ const partOfSpeechEl = document.getElementById('part-of-speech');
 const audioBtn = document.getElementById('audio-btn');
 const currentStreakEl = document.getElementById('current-streak');
 const maxStreakEl = document.getElementById('max-streak');
+const loginBtn = document.getElementById('google-login-btn');
+const userInfo = document.getElementById('user-info');
+const userNameEl = document.getElementById('user-name');
+const logoutBtn = document.getElementById('logout-btn');
 
 let currentAudioUrl = null;
 let currentWordText = '';
+let currentUser = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-    updateStreak();
-    loadDailyWord();
+// --- 1. Authentication Logic ---
+
+// Listen for login state changes
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // User is logged in
+        currentUser = user;
+        loginBtn.style.display = 'none';
+        userInfo.style.display = 'block';
+        userNameEl.textContent = user.displayName.split(' ')[0]; // Show first name
+        await loadUserData(user.uid);
+    } else {
+        // User is logged out
+        currentUser = null;
+        loginBtn.style.display = 'flex';
+        userInfo.style.display = 'none';
+        // Reset streak UI to 0 or local storage if you prefer
+        currentStreakEl.textContent = '-';
+        maxStreakEl.textContent = '-';
+    }
 });
 
-function updateStreak() {
+// Login Button Click
+loginBtn.addEventListener('click', () => {
+    signInWithPopup(auth, provider).catch((error) => {
+        console.error("Login failed:", error);
+    });
+});
+
+// Logout Button Click
+logoutBtn.addEventListener('click', () => {
+    signOut(auth);
+});
+
+
+// --- 2. Database & Streak Logic ---
+
+async function loadUserData(userId) {
     const today = new Date().toDateString();
-    const lastVisit = localStorage.getItem('oneWord_lastVisit');
-    let currentStreak = parseInt(localStorage.getItem('oneWord_streak') || '0');
-    let maxStreak = parseInt(localStorage.getItem('oneWord_maxStreak') || '0');
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
 
+    let streak = 0;
+    let maxStreak = 0;
+    let lastVisit = '';
+
+    if (userSnap.exists()) {
+        const data = userSnap.data();
+        streak = data.currentStreak || 0;
+        maxStreak = data.highestStreak || 0;
+        lastVisit = data.lastVisit || '';
+    }
+
+    // Calculate Streak
     if (lastVisit === today) {
-        // visited today, do nothing
+        // Already visited today, keep streak
     } else if (isYesterday(lastVisit)) {
-        currentStreak++;
+        // Visited yesterday, increment
+        streak++;
     } else {
-        currentStreak = 1;
+        // Missed a day (or first time), reset
+        streak = 1;
     }
 
-    if (currentStreak > maxStreak) {
-        maxStreak = currentStreak;
+    // Update Max Streak
+    if (streak > maxStreak) {
+        maxStreak = streak;
     }
 
-    localStorage.setItem('oneWord_lastVisit', today);
-    localStorage.setItem('oneWord_streak', currentStreak);
-    localStorage.setItem('oneWord_maxStreak', maxStreak);
+    // Save to Firestore
+    await setDoc(userRef, {
+        currentStreak: streak,
+        highestStreak: maxStreak,
+        lastVisit: today,
+        email: currentUser.email // optional: save email for admin reference
+    }, { merge: true });
 
-    currentStreakEl.textContent = currentStreak;
+    // Update UI
+    currentStreakEl.textContent = streak;
     maxStreakEl.textContent = maxStreak;
 }
 
@@ -53,6 +109,13 @@ function isYesterday(dateString) {
     yesterday.setDate(today.getDate() - 1);
     return dateString === yesterday.toDateString();
 }
+
+
+// --- 3. Word Loading Logic (Same as before) ---
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadDailyWord();
+});
 
 async function loadDailyWord() {
     const today = new Date().toLocaleDateString();
@@ -65,7 +128,6 @@ async function loadDailyWord() {
             return;
         }
     }
-
     await fetchAndVerifyWord(today);
 }
 
@@ -101,13 +163,12 @@ async function fetchAndVerifyWord(dateKey) {
 }
 
 function renderWord(data) {
-    currentWordText = data.word; // Store word for robot voice
+    currentWordText = data.word;
     const phonetic = data.phonetic || (data.phonetics.find(p => p.text)?.text) || '';
     const meaning = data.meanings[0];
     const definition = meaning?.definitions[0]?.definition || 'No definition available.';
     const partOfSpeech = meaning?.partOfSpeech || 'noun';
     
-    // Check for human audio
     const audioObj = data.phonetics.find(p => p.audio && p.audio !== '');
     currentAudioUrl = audioObj ? audioObj.audio : null;
 
@@ -116,7 +177,6 @@ function renderWord(data) {
     if (definitionEl) definitionEl.textContent = definition;
     if (partOfSpeechEl) partOfSpeechEl.textContent = partOfSpeech;
 
-    // ALWAYS show the button now
     if (audioBtn) {
         audioBtn.style.display = 'inline-flex';
         audioBtn.onclick = playAudio;
@@ -124,13 +184,10 @@ function renderWord(data) {
 }
 
 function playAudio() {
-    // 1. Try Human Audio
     if (currentAudioUrl) {
         const audio = new Audio(currentAudioUrl);
         audio.play();
-    } 
-    // 2. Fallback to Robot Voice (Browser Speech API)
-    else if ('speechSynthesis' in window) {
+    } else if ('speechSynthesis' in window) {
         const utterance = new SpeechSynthesisUtterance(currentWordText);
         utterance.lang = 'en-US'; 
         window.speechSynthesis.speak(utterance);
