@@ -1,24 +1,32 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>One Word a Day</title>
-  <link rel="stylesheet" href="style.css">
-</head>
 <body>
+  <div class="shell">
+    <div class="glass">
 
-  <div id="app">
-    <button id="loginBtn">Continue with Google</button>
+      <header>
+        <span class="logo">ONE•WORD</span>
+        <button id="logoutBtn" class="icon">⎋</button>
+      </header>
 
-    <div id="content" style="display:none">
-      <h1 id="word"></h1>
-      <p id="meaning"></p>
-      <p id="example"></p>
-      <p id="streak"></p>
-      <button id="logoutBtn">Logout</button>
+      <section class="word-zone">
+        <h1 id="word">WORD</h1>
+        <p id="meaning" class="meaning">meaning</p>
+        <p id="example" class="example">example</p>
+      </section>
+
+      <section class="stats">
+        <div id="streak">🔥 0 day streak</div>
+        <div id="best">🏆 best: 0</div>
+      </section>
+
+      <footer>
+        <span>return tomorrow</span>
+      </footer>
+
     </div>
   </div>
+
+  <button id="loginBtn" class="login">Continue with Google</button>
 
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="main.js"></script>
 </body>
-</html>

@@ -1,70 +1,50 @@
-import { auth, provider, db } from "./firebase-config.js";
-import {
-  signInWithPopup,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+const today = new Date();
+const todayStr = today.toISOString().slice(0, 10);
+const yesterday = new Date(today);
+yesterday.setDate(today.getDate() - 1);
+const yesterdayStr = yesterday.toISOString().slice(0, 10);
 
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  arrayUnion
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+const ref = doc(db, "users", user.uid);
+const snap = await getDoc(ref);
 
-const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const content = document.getElementById("content");
+let streak = 1;
+let bestStreak = 1;
 
-loginBtn.onclick = () => signInWithPopup(auth, provider);
-logoutBtn.onclick = () => signOut(auth);
+if (!snap.exists()) {
+  await setDoc(ref, {
+    streak: 1,
+    bestStreak: 1,
+    lastSeen: todayStr
+  });
+} else {
+  const data = snap.data();
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) return;
+  if (data.lastSeen === todayStr) {
+    streak = data.streak;
+    bestStreak = data.bestStreak;
+  } else if (data.lastSeen === yesterdayStr) {
+    streak = data.streak + 1;
+    bestStreak = Math.max(data.bestStreak || 1, streak);
 
-  loginBtn.style.display = "none";
-  content.style.display = "block";
-
-  const res = await fetch("/api/today-word");
-  const wordData = await res.json();
-
-  if (wordData.error) {
-    document.getElementById("word").innerText = "Error";
-    document.getElementById("meaning").innerText = wordData.error;
-    document.getElementById("example").innerText = wordData.details || "";
-    return;
-  }
-
-  document.getElementById("word").innerText =
-  wordData.word.charAt(0).toUpperCase() + wordData.word.slice(1);
-  document.getElementById("meaning").innerText = wordData.meaning;
-  document.getElementById("example").innerText = wordData.example;
-
-
-  const ref = doc(db, "users", user.uid);
-  const snap = await getDoc(ref);
-
-  const today = new Date().toISOString().slice(0, 10);
-
-  if (!snap.exists()) {
-    await setDoc(ref, {
-      streak: 1,
-      learned: [today]
+    await updateDoc(ref, {
+      streak,
+      bestStreak,
+      lastSeen: todayStr
     });
-    document.getElementById("streak").innerText = "Streak: 1";
   } else {
-    const data = snap.data();
-    if (!data.learned.includes(today)) {
-      await updateDoc(ref, {
-        streak: data.streak + 1,
-        learned: arrayUnion(today)
-      });
-      document.getElementById("streak").innerText =
-        "Streak: " + (data.streak + 1);
-    } else {
-      document.getElementById("streak").innerText =
-        "Streak: " + data.streak;
-    }
+    streak = 1;
+    bestStreak = data.bestStreak || 1;
+
+    await updateDoc(ref, {
+      streak: 1,
+      bestStreak,
+      lastSeen: todayStr
+    });
   }
-});
+}
+
+document.getElementById("streak").innerText =
+  `🔥 ${streak} day streak`;
+
+document.getElementById("best").innerText =
+  `🏆 best: ${bestStreak}`;
