@@ -36,7 +36,8 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  document.getElementById("word").innerText = wordData.word;
+  document.getElementById("word").innerText =
+  wordData.word.charAt(0).toUpperCase() + wordData.word.slice(1);
   document.getElementById("meaning").innerText = wordData.meaning;
   document.getElementById("example").innerText = wordData.example;
 
