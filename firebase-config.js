@@ -7,7 +7,7 @@ const firebaseConfig = {
   authDomain: "wordo-b7d57.firebaseapp.com",
   projectId: "wordo-b7d57",
 };
-
+//
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
