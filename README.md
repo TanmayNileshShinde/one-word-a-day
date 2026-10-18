@@ -1,4 +1,8 @@
-# One Word A Day
+# 📖 One Word A Day
+
+[![GitHub stars](https://img.shields.io/github/stars/TanmayNileshShinde/one-word-a-day.svg?style=flat&color=yellow)](https://github.com/TanmayNileshShinde/one-word-a-day/stargazers)
+[![Live Demo](https://img.shields.io/badge/demo-online-green.svg)](https://newdaynewword.vercel.app/)
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
 **One Word A Day** is a web application designed to help users expand their vocabulary by learning a new word every day. The app encourages daily learning through a streak tracking system, allowing users to sign in and maintain their progress over time.
 
