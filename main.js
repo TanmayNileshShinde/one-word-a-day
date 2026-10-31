@@ -3,7 +3,7 @@ import { auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, doc, 
 const RANDOM_WORD_API = 'https://random-word-api.herokuapp.com/word?number=1';
 const DICTIONARY_API = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 
-// DOM Elements
+// dom elements
 const wordEl = document.getElementById('word-display');
 const phoneticEl = document.getElementById('phonetic-display');
 const definitionEl = document.getElementById('definition-display');
@@ -20,26 +20,26 @@ let currentAudioUrl = null;
 let currentWordText = '';
 let currentUser = null;
 
-// --- 1. Authentication & Streak Switcher ---
+// auth & streak
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // SCENARIO A: User is Logged In (Use Firebase)
+        // auth user
         currentUser = user;
         loginBtn.style.display = 'none';
         userInfo.style.display = 'block';
         userNameEl.textContent = user.displayName.split(' ')[0]; 
         await loadFirebaseUserData(user.uid); 
     } else {
-        // SCENARIO B: User is Guest (Use Local Storage)
+        // guest storage
         currentUser = null;
         loginBtn.style.display = 'flex';
         userInfo.style.display = 'none';
-        updateLocalStreak(); // <--- This ensures Guests see "1"
+        updateLocalStreak(); // guest init
     }
 });
 
-// Login/Logout Listeners
+// auth listeners
 loginBtn.addEventListener('click', () => {
     signInWithPopup(auth, provider).catch((error) => console.error("Login failed:", error));
 });
@@ -48,9 +48,9 @@ logoutBtn.addEventListener('click', () => {
     signOut(auth);
 });
 
-// --- 2. Streak Logic (The Brains) ---
+// streak logic
 
-// Logic for GUESTS (Local Storage)
+// guest streak
 function updateLocalStreak() {
     const today = new Date().toDateString();
     const lastVisit = localStorage.getItem('oneWord_lastVisit');
@@ -58,19 +58,19 @@ function updateLocalStreak() {
     let maxStreak = parseInt(localStorage.getItem('oneWord_maxStreak') || '0');
 
     if (lastVisit === today) {
-        // Same day: Do nothing, just display existing value
-        if(currentStreak === 0) currentStreak = 1; // Fix for "0" bug on same-day refresh
+        // same day
+        if(currentStreak === 0) currentStreak = 1; // handle zero
     } else if (isYesterday(lastVisit)) {
-        // Consecutive day: +1
+        // next day
         currentStreak++;
     } else {
-        // Missed a day OR First visit ever: Reset to 1
+        // streak reset
         currentStreak = 1; 
     }
 
     if (currentStreak > maxStreak) maxStreak = currentStreak;
 
-    // Save and Update UI
+    // save ui
     localStorage.setItem('oneWord_lastVisit', today);
     localStorage.setItem('oneWord_streak', currentStreak);
     localStorage.setItem('oneWord_maxStreak', maxStreak);
@@ -79,7 +79,7 @@ function updateLocalStreak() {
     maxStreakEl.textContent = maxStreak;
 }
 
-// Logic for LOGGED IN USERS (Firebase)
+// user streak
 async function loadFirebaseUserData(userId) {
     const today = new Date().toDateString();
     const userRef = doc(db, "users", userId);
@@ -96,7 +96,7 @@ async function loadFirebaseUserData(userId) {
         lastVisit = data.lastVisit || '';
     }
 
-    // Identical logic to local storage
+    // calc streak
     if (lastVisit === today) {
         if(streak === 0) streak = 1;
     } else if (isYesterday(lastVisit)) {
@@ -107,7 +107,7 @@ async function loadFirebaseUserData(userId) {
 
     if (streak > maxStreak) maxStreak = streak;
 
-    // Save to Cloud
+    // cloud save
     await setDoc(userRef, {
         currentStreak: streak,
         highestStreak: maxStreak,
@@ -115,12 +115,12 @@ async function loadFirebaseUserData(userId) {
         email: currentUser.email
     }, { merge: true });
 
-    // Update UI
+    // update ui
     currentStreakEl.textContent = streak;
     maxStreakEl.textContent = maxStreak;
 }
 
-// Helper to check if date was yesterday
+// date check
 function isYesterday(dateString) {
     if (!dateString) return false;
     const today = new Date();
@@ -130,12 +130,11 @@ function isYesterday(dateString) {
 }
 
 
-// --- 3. Word Loading Logic ---
+// word loader
 
 document.addEventListener('DOMContentLoaded', () => {
     loadDailyWord();
-    // Note: We don't call updateStreak() here anymore because
-    // onAuthStateChanged triggers immediately and handles it.
+    // auth managed
 });
 
 async function loadDailyWord() {

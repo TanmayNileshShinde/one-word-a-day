@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
     const today = new Date().toISOString().slice(0, 10);
 
-    // cache word for the day (per deployment)
+    // daily cache
     if (global.dailyWord && global.dailyWord.date === today) {
       return res.status(200).json(global.dailyWord);
     }
